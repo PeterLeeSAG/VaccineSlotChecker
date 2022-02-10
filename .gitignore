@@ -1,0 +1,15 @@
+/.vs
+/packages/*
+!/packages/ServerStorage/
+!/packages/SAG.Common/
+!/packages/SAG.Common.Cryptography/
+!/packages/SAG.Common.ServerStorage/
+!/packages/SAG.DataAccess/
+!/packages/ASPOSE/
+!/packages/SAG.ExcelReport/
+!/packages/SAG.Authentication.JWT/
+/SAG.AcctChequeSystem/Properties/PublishProfiles/*
+CustomProfile.pubxml.user
+obj/
+bin/
+/SAG.AcctChequeSystem/SAG.AcctChequeSystem.csproj.user
