@@ -25,7 +25,8 @@ namespace VaccinceSlotChecker.Handlers
 
                 var requestURL = string.Format("https://bookingform.covidvaccine.gov.hk/forms/api_center?center_id={0}&cv_ctc_type={1}&cv_name={2}",centerID, cvCenterType, cvName);
 
-                Console.WriteLine("URL: " + requestURL);
+                //Console.WriteLine("URL: " + requestURL);
+                //Console.WriteLine("URL: " + requestURL);
                 HttpContent httpContent = new StringContent("", Encoding.UTF8);
                 httpContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 

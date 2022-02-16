@@ -15,7 +15,7 @@ namespace VaccinceSlotChecker.Models
     }
 
     public class TimeSlotDetail
-    {   
+    {
         public DateTime date { get; set; }
         public List<TimeSlot> timeslots { get; set; }
     }
@@ -27,5 +27,10 @@ namespace VaccinceSlotChecker.Models
         public string display_label { get; set; }
         public DateTime datetime { get; set; }
         public int value { get; set; }
+    }
+
+    public class CenterTimeSlot : TimeSlot 
+    {   
+        public string center_id { get; set; }
     }
 }

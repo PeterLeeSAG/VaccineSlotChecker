@@ -11,6 +11,7 @@ namespace VaccinceSlotChecker.Models
         public string center_name { get; set; }
         public string center_id { get; set; }
         public string cv_ctc_type { get; set; }
+        public string district_name { get; set; }
         public string cv_name { get; set; }
     }
 }
