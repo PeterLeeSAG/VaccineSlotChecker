@@ -11,7 +11,9 @@ namespace VaccinceSlotChecker
     {
         private static void Main(string[] args)
         {
-            var centers = LoadAllCenters();            
+            var centers = LoadAllCenters();
+            var availableResults = new List<CenterSlotResult>();
+            var availableCenters = new List<VaccineCenter>();
             var isComplete = false;
             var isShowFull = false;
             var emptySlots = new List<CenterTimeSlot>();
@@ -57,12 +59,15 @@ namespace VaccinceSlotChecker
 
             while (isComplete == false)
             {
-                List<CenterSlotResult> availableResults = new List<CenterSlotResult>();
+                //Clear cached result;
+                availableResults = new List<CenterSlotResult>();
+                availableCenters = new List<VaccineCenter>();
 
                 foreach (var c in centers)
                 {
                     var isError = false;
                     var isEmpty = false;
+                    var isAdded = false;
                     List<TimeSlotDetail> availableDetails = new List<TimeSlotDetail>();
                     List<TimeSlot> availableSlots = new List<TimeSlot>();
 
@@ -83,6 +88,8 @@ namespace VaccinceSlotChecker
 
                         if (apiResult.avalible_timeslots != null && apiResult.avalible_timeslots.Count() != 0)
                         {
+                            
+
                             foreach (var t in apiResult.avalible_timeslots)
                             {
                                 if (t.timeslots != null && t.timeslots.Count != 0)
@@ -92,6 +99,12 @@ namespace VaccinceSlotChecker
                                     if (slots.Count() != 0)
                                     {
                                         //Found empty!
+                                        if (!isAdded)
+                                        {
+                                            availableCenters.Add(c);
+                                            isAdded = true;
+                                        }
+
                                         isEmpty = true;
 
                                         foreach (var s in slots)
@@ -116,73 +129,65 @@ namespace VaccinceSlotChecker
 
                         if (isEmpty)
                         {
-                            Console.WriteLine("Checking Center: [{1}] {0}", c.center_name, c.district_name);
-
-                            Console.ForegroundColor = ConsoleColor.White;
-                            Console.BackgroundColor = ConsoleColor.Green;
-                            Console.WriteLine("Found empty slots:");
-                            var groups = availableSlots.GroupBy(s => s.datetime.ToString("yyyy/MM/dd"));
-
-                            //foreach (var s in availableSlots)
-                            //{
-                            //    Console.WriteLine("Datetime: " + s.datetime.ToString("yyyy/MM/dd hh:mm:ss") + " (id: " + s.timeslots_id + ") @ " + DateTime.Now.ToString("yyyy/MM/dd hh:mm:ss"));
-                            //}
-
-                            foreach (var g in groups)
-                            {
-                                Console.Write("Date: " + g.Key + " ");
-                                var displaySlots = "";
-
-                                foreach (var s in g)
-                                {
-                                    
-                                    displaySlots += (string.IsNullOrEmpty(displaySlots)? "" : ", ") + s.datetime.ToString("hh:mm");
-                                }
-
-                                Console.WriteLine("TimeSlots: " + displaySlots);
-                            }
-                            
-                            Console.ResetColor();
-                            Console.Beep();
-
                             availableResults.Add(new CenterSlotResult { center_id = c.center_id, CTC_NATURE = apiResult.CTC_NATURE, freeTimeslots = availableSlots });
-                        }
-                        else
-                        {
-                            if (isShowFull)
-                            {
-                                Console.WriteLine("Checking Center: [{1}] {0}", c.center_name, c.district_name);
-
-                                Console.ForegroundColor = ConsoleColor.White;
-                                Console.BackgroundColor = ConsoleColor.DarkRed;
-                                Console.WriteLine("No empty slots.");
-                                Console.ResetColor();
-                            }
                         }
                     }
                     else
                     {
                         Console.ForegroundColor = ConsoleColor.White;
                         Console.BackgroundColor = ConsoleColor.Red;
-                        Console.WriteLine("Checking Error!!! ");
+                        Console.WriteLine("Checking Error on center: [{1}] {0}", c.center_name, c.district_name);
                         Console.ResetColor();
                     }
 
                     isEmpty = false;
                     isError = false;
-                    //Summary: availableResults
                 }
 
-                if (availableResults.Count != 0)
+                if (availableResults.Count != 0 && availableCenters.Count != 0)
                 {
+                    Console.Clear();
+                    Console.WriteLine("<<Data updated @ " + DateTime.Now.ToString("HH:mm:ss") + ">>");
+                    foreach (var c in availableCenters)
+                    {
+                        Console.WriteLine("Checking Center: [{1}] {0}", c.center_name, c.district_name);
+
+                        Console.ForegroundColor = ConsoleColor.White;
+                        Console.BackgroundColor = ConsoleColor.Green;
+                        Console.WriteLine("Found empty slots:");
+
+                        var slots = availableResults
+                            .Where(r => r.center_id == c.center_id)
+                            .SelectMany(r => r.freeTimeslots).ToList();
+
+                        var groups = slots.GroupBy(s => s.datetime.ToString("yyyy/MM/dd"));
+
+                        foreach (var g in groups)
+                        {
+                            Console.Write("Date: " + g.Key + " ");
+                            var displaySlots = "";
+
+                            foreach (var s in g)
+                            {
+
+                                displaySlots += (string.IsNullOrEmpty(displaySlots) ? "" : ", ") + s.datetime.ToString("hh:mm");
+                            }
+
+                            Console.WriteLine("TimeSlots: " + displaySlots);
+                        }
+
+                        Console.ResetColor();
+                    }
+
                     Thread.Sleep(10000); //display longer
                 }
                 else
                 {
+                    Console.Clear();
+                    Console.WriteLine("<<Data updated @ " + DateTime.Now.ToString("HH:mm:ss") + ">>");
+                    Console.WriteLine("All centers have not free time-slot!");
                     Thread.Sleep(3000);
                 }
-                
-                Console.Clear();
             }
         }
 
